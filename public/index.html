@@ -1,0 +1,48 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Proxy</title>
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Web Proxy</h1>
+    <form id="proxyForm">
+      <label for="url">Target URL:</label>
+      <input type="text" id="url" name="url" placeholder="Enter URL" required>
+
+      <label for="proxy">HTTP Proxy:</label>
+      <input type="text" id="proxy" name="proxy" placeholder="Enter Proxy (e.g., http://proxy.com)" required>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="responseContainer" style="display:none;">
+      <h2>Proxy Response</h2>
+      <pre id="responseOutput"></pre>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('proxyForm');
+    const responseContainer = document.getElementById('responseContainer');
+    const responseOutput = document.getElementById('responseOutput');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const url = document.getElementById('url').value;
+      const proxy = document.getElementById('proxy').value;
+
+      const response = await fetch(`/api/server?url=${encodeURIComponent(url)}&proxy=${encodeURIComponent(proxy)}`);
+      const data = await response.json();
+
+      responseContainer.style.display = 'block';
+      responseOutput.textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
