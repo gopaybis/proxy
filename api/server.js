@@ -22,7 +22,8 @@ async function getRandomProxy() {
       url: `http://${proxyIp}:${port}`
     };
   } catch (error) {
-    throw new Error('Gagal mengambil daftar proxy: ' + error.message);
+    console.error('Error fetching proxy list:', error);
+    throw new Error('Failed to fetch proxy list');
   }
 }
 
@@ -51,12 +52,14 @@ export default async function handler(req, res) {
         proxyReq.path = targetUrl;
       },
       onError: (err, req, res) => {
+        console.error('Proxy error:', err);
         res.status(500).json({ error: "Proxy error", details: err.message });
       },
     });
 
     proxy(req, res);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch proxy", details: error.message });
+    console.error('Error in serverless function:', error);
+    res.status(500).json({ error: "Internal server error", details: error.message });
   }
 }
