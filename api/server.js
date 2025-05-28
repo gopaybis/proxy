@@ -8,13 +8,24 @@ const proxyListUrl = 'https://raw.githubusercontent.com/gopaybis/Proxylist/refs/
 // Fungsi untuk mengambil daftar proxy dan memilih proxy acak
 async function getRandomProxy() {
   try {
+    console.log('Fetching proxy list...');
     const response = await axios.get(proxyListUrl);
+    if (!response || !response.data) {
+      throw new Error('No data found in proxy list');
+    }
+
+    console.log('Proxy list fetched successfully');
+
     const proxies = response.data.split('\n').filter(line => line.trim() !== '');
+    if (proxies.length === 0) {
+      throw new Error('Proxy list is empty');
+    }
 
     // Pilih proxy acak
     const randomProxy = proxies[Math.floor(Math.random() * proxies.length)].split(',');
-
     const [proxyIp, port, countryCode, isp] = randomProxy;
+
+    console.log('Chosen proxy:', proxyIp, port);
 
     return {
       ip: proxyIp,
@@ -36,10 +47,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Ambil proxy acak
+    console.log('Getting random proxy...');
     const { url } = await getRandomProxy();
+    console.log('Using proxy:', url);
 
-    // Buat middleware proxy
     const proxy = createProxyMiddleware({
       target: url,  // Menggunakan proxy yang dipilih
       changeOrigin: true,
@@ -47,9 +58,9 @@ export default async function handler(req, res) {
         '^/api/server': '',  // Menghilangkan '/api/server' dari path URL
       },
       onProxyReq: (proxyReq, req, res) => {
-        // Menambahkan query string target URL
-        const targetUrl = query.url; // Ambil URL target dari query parameter
+        const targetUrl = query.url;
         proxyReq.path = targetUrl;
+        console.log('Proxying to:', targetUrl);
       },
       onError: (err, req, res) => {
         console.error('Proxy error:', err);
