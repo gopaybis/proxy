@@ -1,4 +1,4 @@
-// api/proxy.js
+// api/server.js
 import axios from 'axios';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
