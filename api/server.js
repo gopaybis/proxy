@@ -1,20 +1,35 @@
 // api/server.js
+import axios from 'axios';
+
+const proxyListUrl = 'https://raw.githubusercontent.com/gopaybis/Proxylist/refs/heads/main/proxyiplengkap1.txt';
+
+async function getProxyList() {
+  try {
+    console.log('Fetching proxy list...');
+    const response = await axios.get(proxyListUrl);
+    console.log('Proxy list fetched successfully:', response.data.slice(0, 100)); // Cek sebagian data
+    const proxies = response.data.split('\n').filter(line => line.trim() !== '');
+    return proxies;
+  } catch (error) {
+    console.error('Error fetching proxy list:', error);
+    throw new Error('Failed to fetch proxy list');
+  }
+}
 
 export default async function handler(req, res) {
   const { query } = req;
 
-  // Memastikan ada parameter yang valid dalam query
   if (!query.url) {
     return res.status(400).json({ error: "Missing target URL in query parameter" });
   }
 
   try {
-    console.log('Received URL:', query.url); // Debugging
+    const proxies = await getProxyList();
+    console.log('Number of proxies fetched:', proxies.length); // Log jumlah proxy yang diambil
 
-    // Mengirimkan respons sederhana tanpa proxy
-    res.status(200).json({ message: 'Proxy request received', url: query.url });
+    // Kirim respons sederhana
+    res.status(200).json({ message: 'Proxy list fetched', proxiesCount: proxies.length });
   } catch (error) {
-    console.error('Error in serverless function:', error);
-    res.status(500).json({ error: "Internal server error", details: error.message });
+    res.status(500).json({ error: 'Failed to fetch proxy list', details: error.message });
   }
 }
