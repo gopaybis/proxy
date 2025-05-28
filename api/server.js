@@ -1,39 +1,26 @@
 // api/server.js
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import axios from 'axios';
 
-// Mendapatkan pengaturan proxy manual dari query params
-const getProxyConfig = (req) => {
-  const { proxy, dns } = req.query;
-  return {
-    proxy: proxy || 'http://default-proxy.com',  // Ganti dengan proxy default
-    dns: dns || 'default-dns.com'  // Ganti dengan DNS default
-  };
-};
+export default function handler(req, res) {
+  const { url, proxy } = req.query;
 
-// Middleware untuk mengatur proxy dan DNS
-export default async function handler(req, res) {
-  const { proxy, dns } = getProxyConfig(req);  // Mengambil proxy dan DNS dari query
-
-  console.log('Using Proxy:', proxy);
-  console.log('Using DNS:', dns);
+  // Pastikan ada URL dan proxy yang diberikan
+  if (!url || !proxy) {
+    return res.status(400).json({ error: 'Missing URL or Proxy' });
+  }
 
   // Setup proxy middleware
   const proxyMiddleware = createProxyMiddleware({
-    target: 'http://example.com',  // Ganti dengan URL tujuan
+    target: url, // URL tujuan
     changeOrigin: true,
     secure: false,
     headers: {
-      'X-Forwarded-For': dns  // Menyertakan DNS di header jika diperlukan
+      'X-Forwarded-For': proxy, // Menyertakan proxy dalam header
     },
-    router: {
-      // Kamu bisa menetapkan pengaturan DNS atau routing berbeda di sini jika perlu
-      [proxy]: 'http://example.com', // Custom routing berdasarkan proxy yang diberikan
-    }
   });
 
   try {
-    // Proses permintaan melalui proxy middleware
+    // Mengarahkan permintaan melalui middleware proxy
     proxyMiddleware(req, res);
   } catch (error) {
     console.error('Error during proxy:', error);
