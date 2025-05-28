@@ -1,12 +1,20 @@
 {
-  "name": "proxy-web",
+  "name": "web-proxy",
   "version": "1.0.0",
+  "description": "A simple web proxy with manual HTTP proxy configuration.",
+  "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
-    "build": "vercel build"
+    "build": "vercel build",
+    "start": "vercel start"
   },
   "dependencies": {
     "axios": "^0.21.1",
     "http-proxy-middleware": "^2.0.1"
-  }
+  },
+  "devDependencies": {
+    "vercel": "^23.0.0"
+  },
+  "author": "",
+  "license": "ISC"
 }
