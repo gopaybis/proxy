@@ -1,8 +1,7 @@
-// vercel.json
 {
   "version": 2,
   "functions": {
-    "api/proxy.js": {
+    "api/server.js": {
       "memory": 1024,
       "maxDuration": 10
     }
