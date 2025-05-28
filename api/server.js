@@ -1,43 +1,4 @@
 // api/server.js
-import axios from 'axios';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-
-// URL daftar proxy
-const proxyListUrl = 'https://raw.githubusercontent.com/gopaybis/Proxylist/refs/heads/main/proxyiplengkap1.txt';
-
-// Fungsi untuk mengambil daftar proxy dan memilih proxy acak
-async function getRandomProxy() {
-  try {
-    console.log('Fetching proxy list...');
-    const response = await axios.get(proxyListUrl);
-    if (!response || !response.data) {
-      throw new Error('No data found in proxy list');
-    }
-
-    console.log('Proxy list fetched successfully');
-
-    const proxies = response.data.split('\n').filter(line => line.trim() !== '');
-    if (proxies.length === 0) {
-      throw new Error('Proxy list is empty');
-    }
-
-    // Pilih proxy acak
-    const randomProxy = proxies[Math.floor(Math.random() * proxies.length)].split(',');
-    const [proxyIp, port, countryCode, isp] = randomProxy;
-
-    console.log('Chosen proxy:', proxyIp, port);
-
-    return {
-      ip: proxyIp,
-      port: port,
-      url: `http://${proxyIp}:${port}`
-    };
-  } catch (error) {
-    console.error('Error fetching proxy list:', error);
-    throw new Error('Failed to fetch proxy list');
-  }
-}
-
 export default async function handler(req, res) {
   const { query } = req;
 
@@ -47,28 +8,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Getting random proxy...');
-    const { url } = await getRandomProxy();
-    console.log('Using proxy:', url);
-
-    const proxy = createProxyMiddleware({
-      target: url,  // Menggunakan proxy yang dipilih
-      changeOrigin: true,
-      pathRewrite: {
-        '^/api/server': '',  // Menghilangkan '/api/server' dari path URL
-      },
-      onProxyReq: (proxyReq, req, res) => {
-        const targetUrl = query.url;
-        proxyReq.path = targetUrl;
-        console.log('Proxying to:', targetUrl);
-      },
-      onError: (err, req, res) => {
-        console.error('Proxy error:', err);
-        res.status(500).json({ error: "Proxy error", details: err.message });
-      },
-    });
-
-    proxy(req, res);
+    // Log untuk memastikan parameter diterima dengan benar
+    console.log('Received URL:', query.url);
+    
+    // Merespons dengan URL yang diterima
+    res.status(200).json({ message: "Proxy request received", url: query.url });
   } catch (error) {
     console.error('Error in serverless function:', error);
     res.status(500).json({ error: "Internal server error", details: error.message });
