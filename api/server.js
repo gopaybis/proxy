@@ -27,6 +27,13 @@ async function getRandomProxy() {
 }
 
 export default async function handler(req, res) {
+  const { query } = req;
+
+  // Memastikan ada parameter yang valid dalam query
+  if (!query.url) {
+    return res.status(400).json({ error: "Missing target URL in query parameter" });
+  }
+
   try {
     // Ambil proxy acak
     const { url } = await getRandomProxy();
@@ -36,12 +43,12 @@ export default async function handler(req, res) {
       target: url,  // Menggunakan proxy yang dipilih
       changeOrigin: true,
       pathRewrite: {
-        '^/proxy': '',  // Menghilangkan '/proxy' dari path URL
+        '^/api/server': '',  // Menghilangkan '/api/server' dari path URL
       },
       onProxyReq: (proxyReq, req, res) => {
-        // Menambahkan query string jika diperlukan
-        const { originalUrl } = req;
-        proxyReq.path = originalUrl;
+        // Menambahkan query string target URL
+        const targetUrl = query.url; // Ambil URL target dari query parameter
+        proxyReq.path = targetUrl;
       },
       onError: (err, req, res) => {
         res.status(500).json({ error: "Proxy error", details: err.message });
